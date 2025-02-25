@@ -1,0 +1,9 @@
+Package: com.yuayu.awemehuaji
+Name: AwemeHuaji
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: 抖音画集功能
+Maintainer: yuayu
+Author: yuayu
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)

@@ -1,218 +1,55 @@
-# AwemeHook
-抖音的hook教程
- AwemeHook 开源库使用指南
+# 抖音画集 Tweak
 
- 目录
-1. 环境准备  
-2. 核心工具链  
-3. 快速上手  
-   - Frida Hook 示例  
-   - Block 参数解析技巧  
-4. 高级技巧  
-5. 注意事项
+一个基于 theos 开发的抖音插件，实现自动播放、关闭弹窗等功能。
 
----
+## 功能特性
 
- 1. 环境准备
- 工具  版本要求  安装命令 
+- ✨ 自动连续播放视频
+- 🚫 关闭各类弹窗提示
+- 🔒 关闭青少年模式弹窗
+- ⚙️ 设置界面可控制功能开关
+- 🔄 支持有根和无根设备
 
- macOS  12.0+   
- Xcode  14.0+  `xcodeselect install` 
- 越狱设备  iOS 15.0+   
- MonkeyDev  2.0.0+  `brew install monkeydev` 
+## 逆向分析过程
 
----# AwemeHook
-抖音的hook教程
- AwemeHook 开源库使用指南
+### 工具准备
+- Reveal：分析界面层级和控件结构
+- Flex：快速定位关键类和方法
+- Frida：动态调试和跟踪方法调用
 
- 目录
-1. 环境准备  
-2. 核心工具链  
-3. 快速上手  
-   - Frida Hook 示例  
-   - Block 参数解析技巧  
-4. 高级技巧  
-5. 注意事项
+### 关键类分析
+- `AWEFeedTableViewController`: 负责视频列表控制
+- `AWEVideoPlayerController`: 视频播放控制器
+- `AWESettingsTableViewController`: 设置界面控制器
+- `AWETeenModeAlertView`: 青少年模式弹窗
 
----
+## 安装方法
 
- 1. 环境准备
- 工具  版本要求  安装命令 
+### 有根设备
+1. 添加源并安装
+2. 重启抖音应用
+3. 进入设置开启功能
 
- macOS  12.0+   
- Xcode  14.0+  `xcodeselect install` 
- 越狱设备  iOS 15.0+   
- MonkeyDev  2.0.0+  `brew install monkeydev` 
+### 无根设备
+1. 下载无根版本
+2. 安装至 `/var/jb/Library/MobileSubstrate/DynamicLibraries`
+3. 重启抖音应用
 
----
+## 开发环境
 
- 2. 核心工具链
- 🔧 MonkeyDev 安装配置bash
- 安装 MonkeyDev
-brew install monkeydev
+- theos
+- iOS 14.0+
+- arm64/arm64e 架构
 
- 创建工程模板
-monkeydev create -name AwemeHookDemo -proj AwemeHookDemo
+## 使用方法
 
- 启用 Frida 支持
-open -a Xcode AwemeHookDemo.xcodeproj
-🔍 Reveal 调试集成
-1. 在 `Build Phases` 添加 `Run Script`:bash
-/Applications/Reveal.app/Contents/Resources/reveal-macOS.sh
-2. 运行时自动注入调试器
+1. 安装插件后重启抖音
+2. 进入设置页面
+3. 找到"画集功能"开关
+4. 打开开关即可启用全部功能
 
----
+## 编译方法
 
- 3. 快速上手
- 🎯 Frida Hook 示例javascript
-// hook AWESettingsTableViewController 的 refreshView 方法
-frida.attach('com.ss.android.ugc.aweme', {
-  onMessage: function(msg) {
-    console.log('$ RefreshView called with:', msg.args0);
-  },
-  code: `
-    ObjC.classes.AWESettingsTableViewController.prototype.refreshView = function() {
-      this.$super.refreshView();
-      console.log('$ Custom refresh logic');
-    };
-  `
-});
-🔍 Block 参数解析技巧
- 传统方案（Debugserver + LLDB）lldb
-(lldb) image list -o | grep AWESettingsItemModel
-(lldb) br set -n AWESettingsItemModel.switchChangedBlock
-(lldb) process continue
-🚀 优化方案（CTObjectiveCRuntimeAdditions）objc
-import <CTObjectiveCRuntimeAdditions.h>
-
-// 获取 block 参数类型
-NSArray *paramTypes = CTBlockDescriptionGetParameterTypes(self.switchChangedBlock);
-
-// 打印详细信息
-NSLog(@"Block Signature: %@", CTBlockDescriptionGetTypeEncoding(self.switchChangedBlock));
-NSLog(@"Parameter Types: %@", paramTypes);
----
-
- 4. 高级技巧
- 💎 美化 Block 属性objc
-// 原始定义
-@property(copy, nonatomic) CDUnknownBlockType switchChangedBlock;
-
-// 优化方案
-typedef void (^AWESwitchChangedBlock)(BOOL isSelected);
-
-@interface AWESettingItemModel : NSObject
-@property(copy, nonatomic) AWESwitchChangedBlock switchChangedBlock;
-@end
-
-// 使用示例
-self.switchChangedBlock = ^(BOOL isSelected) {
-  NSLog(@"$ Switch state changed to %@", @(isSelected));
-};
----
-
- 5. 注意事项
-⚠️ 法律风险  
-- 越狱设备违反 Apple 官方条款
-- 逆向工程可能涉及法律风险
-- 仅限测试环境使用
-
-🔒 安全建议  
-- 使用 `--no-pull` 参数防止自动注入
-- hook 代码需添加 `__attribute__((used)))` 防止优化
-- 调试时启用 `Debug executable` 选项
-
-💡 性能优化  
-- 优先使用 `dlopen` 方式加载 Frida 脚本
-- 避免在主线程执行 heavy-weight hook 操作
-- 使用 `FridaScriptFilter` 过滤无关进程
-
-> 📌 文档持续更新：https://github.com/H7ang0/AwemeHook/wiki  
-> 📧 技术支持：h7ang0@gmail.com 
-
-
-
- 2. 核心工具链
- 🔧 MonkeyDev 安装配置bash
- 安装 MonkeyDev
-brew install monkeydev
-
- 创建工程模板
-monkeydev create -name AwemeHookDemo -proj AwemeHookDemo
-
- 启用 Frida 支持
-open -a Xcode AwemeHookDemo.xcodeproj
-🔍 Reveal 调试集成
-1. 在 `Build Phases` 添加 `Run Script`:bash
-/Applications/Reveal.app/Contents/Resources/reveal-macOS.sh
-2. 运行时自动注入调试器
-
----
-
- 3. 快速上手
- 🎯 Frida Hook 示例javascript
-// hook AWESettingsTableViewController 的 refreshView 方法
-frida.attach('com.ss.android.ugc.aweme', {
-  onMessage: function(msg) {
-    console.log('$ RefreshView called with:', msg.args0);
-  },
-  code: `
-    ObjC.classes.AWESettingsTableViewController.prototype.refreshView = function() {
-      this.$super.refreshView();
-      console.log('$ Custom refresh logic');
-    };
-  `
-});
-🔍 Block 参数解析技巧
- 传统方案（Debugserver + LLDB）lldb
-(lldb) image list -o | grep AWESettingsItemModel
-(lldb) br set -n AWESettingsItemModel.switchChangedBlock
-(lldb) process continue
-🚀 优化方案（CTObjectiveCRuntimeAdditions）objc
-import <CTObjectiveCRuntimeAdditions.h>
-
-// 获取 block 参数类型
-NSArray *paramTypes = CTBlockDescriptionGetParameterTypes(self.switchChangedBlock);
-
-// 打印详细信息
-NSLog(@"Block Signature: %@", CTBlockDescriptionGetTypeEncoding(self.switchChangedBlock));
-NSLog(@"Parameter Types: %@", paramTypes);
----
-
- 4. 高级技巧
- 💎 美化 Block 属性objc
-// 原始定义
-@property(copy, nonatomic) CDUnknownBlockType switchChangedBlock;
-
-// 优化方案
-typedef void (^AWESwitchChangedBlock)(BOOL isSelected);
-
-@interface AWESettingItemModel : NSObject
-@property(copy, nonatomic) AWESwitchChangedBlock switchChangedBlock;
-@end
-
-// 使用示例
-self.switchChangedBlock = ^(BOOL isSelected) {
-  NSLog(@"$ Switch state changed to %@", @(isSelected));
-};
----
-
- 5. 注意事项
-⚠️ 法律风险  
-- 越狱设备违反 Apple 官方条款
-- 逆向工程可能涉及法律风险
-- 仅限测试环境使用
-
-🔒 安全建议  
-- 使用 `--no-pull` 参数防止自动注入
-- hook 代码需添加 `__attribute__((used)))` 防止优化
-- 调试时启用 `Debug executable` 选项
-
-💡 性能优化  
-- 优先使用 `dlopen` 方式加载 Frida 脚本
-- 避免在主线程执行 heavy-weight hook 操作
-- 使用 `FridaScriptFilter` 过滤无关进程
-
-> 📌 文档持续更新：https://github.com/H7ang0/AwemeHook/wiki  
-> 📧 技术支持：h7ang0@gmail.com 
-
+```bash
+make clean
+make package
