@@ -1,0 +1,48 @@
+%hook AWEVideoModel
+
+- (NSURL *)videoURL {
+    NSURL *originalURL = %orig;
+    NSURL *noWatermarkURL = [self getNoWatermarkVideoURL:originalURL];
+    return noWatermarkURL;
+}
+
+%end
+
+%hook AWEPhotoDownloadManager
+
+- (void)downloadPhotoWithURL:(NSURL *)url completion:(void (^)(NSURL *))completion {
+    NSURL *hdImageURL = [self getHDPhotoURL:url];
+    completion(hdImageURL);
+}
+
+%end
+
+%hook AWEVideoDownloadManager
+
+- (void)downloadLivePhotoWithURL:(NSURL *)url completion:(void (^)(NSURL *))completion {
+    NSURL *noWatermarkLivePhotoURL = [self getNoWatermarkLivePhotoURL:url];
+    completion(noWatermarkLivePhotoURL);
+}
+
+%end
+
+%hook AWECommentManager
+
+- (void)fetchCommentsForVideoID:(NSString *)videoID completion:(void (^)(NSArray *))completion {
+    %orig(videoID, ^(NSArray *comments) {
+        NSArray *filteredComments = [self filterComments:comments];
+        completion(filteredComments);
+    });
+}
+
+%end
+
+%hook AWEEmojiModel
+
+- (NSString *)emojiURL {
+    NSString *emojiURL = %orig;
+    return [self getHDCommentEmojiURL:emojiURL];
+}
+
+%end
+代码不一定准确建议自己用frida
